@@ -1,0 +1,46 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".opencode/context.md",
+    ".opencode/conversation_history.md"
+  ],
+  "mcp": {
+    "servers": {
+      "github": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@modelcontextprotocol/server-github"
+        ],
+        "env": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+        },
+        "enabled": true
+      },
+      "git": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@modelcontextprotocol/server-git",
+          "--repository",
+          "."
+        ],
+        "enabled": true
+      },
+      "gemini-live-docs": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@google/gemini-mcp-server"
+        ],
+        "env": {
+          "GEMINI_API_KEY": "{env:GEMINI_API_KEY}"
+        },
+        "enabled": true
+      }
+    }
+  }
+}

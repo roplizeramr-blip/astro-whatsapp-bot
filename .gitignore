@@ -1,0 +1,20 @@
+# 🔐 بيانات الدخول — متتعملش git add عليها أبداً
+# session/ فيها creds.json = جلسة واتساب كاملة (ارتباط بالحساب)
+# لو ات رفعت على git عام، ده يعني ملكية حساب حد تانية.
+session/
+session_voip/
+data/*
+backups/
+_platform-backup/
+*.log
+.env
+.env-*
+!.env.example
+
+# 📦 الاعتماديات
+node_modules/
+
+# 🛠️ أدوات
+.zcode/
+*.tmp
+scratch/

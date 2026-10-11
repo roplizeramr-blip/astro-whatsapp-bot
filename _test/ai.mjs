@@ -1,0 +1,75 @@
+/**
+ * اختبارات مسار الذكاء الاصطناعي:
+ * - الرد الفاضي يفتح circuit breaker بعد العتبة ولا يستمر كل رسالة.
+ * - الـ breaker المفتوح يتخطى المزود.
+ * - offline fallback يرجع نص مفهوم لو كل المزودات معطلة.
+ *
+ * التشغيل: node _test/ai.mjs
+ */
+import { apiHealth, isOpen, noteEmpty, aiProviderStatus } from '../core/api.js';
+import { hintFor } from '../core/arabic.js';
+import { chatWithAI } from '../core/ai.js';
+
+let pass = 0;
+let fail = 0;
+function check(label, ok, detail = '') {
+  if (ok) { pass++; console.log(`  ✅ ${label}`); }
+  else { fail++; console.log(`  ❌ ${label} ${detail}`); }
+}
+
+console.log('🧠 AI health / fallback');
+const gemini = '/api/v1/ai/gemini';
+check('مزود غير مختبر يظهر unknown لا healthy', aiProviderStatus().gemini === 'unknown');
+for (let i = 0; i < 4; i++) noteEmpty(gemini);
+check('ردود Gemini الفاضية تفتح breaker بعد 4 محاولات', isOpen(gemini));
+check('حالة المزود تظهر open', aiProviderStatus().gemini === 'open');
+check('endpoint المفتوح يمنع زيادة محاولات الرد الفاضي', (() => { noteEmpty(gemini); return aiProviderStatus().gemini === 'open'; })());
+check('حالة API تجمع endpoint المفتوح', apiHealth().down.includes(gemini));
+
+// منع طلبات network على باقي المزودات. throws بسرعة لإجبار fallback المحلي.
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async () => { throw new Error('test offline'); };
+try {
+  const result = await chatWithAI({
+    text: 'ازيك؟',
+    key: '201000000001@s.whatsapp.net',
+    pushName: 'اختبار',
+  });
+  check('AI يرجع رد بديل مفهوم عند سقوط المصادر', !!result.reply && result.reply.length > 8, result.reply);
+  check('الرد البديل لا يكشف أسماء/أخطاء مزودين', !/500|Groq|Gemini|API|كل المصادر فشلت/i.test(result.reply));
+} catch (err) {
+  check('AI لا يرمي خطأ إلى المستخدم', false, err.message);
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+console.log('\n💡 توصيات الأمر');
+check('اقتراح تنزيل الأغاني', hintFor('إزاي أنزل أغنية؟') === 'song');
+check('اقتراح التذكيرات بالاسم الفعلي', hintFor('فكرني بعد ساعة') === 'ذكرني');
+check('لا يخمن اقتراحًا من لا شيء', hintFor('السلام عليكم يا صاحبي') === null);
+
+console.log('\n🧠 الذاكرة وتفضيل اللغة');
+const { rememberMemory, getProfile, deleteMemory, clearMemories, setLanguage } = await import('../core/memory.js');
+const testKey = '201999999999@s.whatsapp.net';
+clearMemories(testKey);
+check('تصفير الذاكرة يرجع 0 في البداية', getProfile(testKey).memories.length === 0);
+rememberMemory(testKey, 'بيحب الكشري بالصلصة', { pinned: true });
+check('حفظ ذكرى مثبتة بنجاح', getProfile(testKey).memories.length === 1 && getProfile(testKey).memories[0].pin === true);
+rememberMemory(testKey, 'بيحب الكشري بالصلصة', { pinned: true });
+check('منع تكرار نفس الذكرى وزيادة hits', getProfile(testKey).memories.length === 1 && getProfile(testKey).memories[0].hits === 1);
+const del = deleteMemory(testKey, 0);
+check('حذف ذكرى بالرقم', del.text === 'بيحب الكشري بالصلصة' && getProfile(testKey).memories.length === 0);
+setLanguage(testKey, 'msa');
+check('تحديد لغة البروفايل (msa)', getProfile(testKey).lang === 'msa');
+
+console.log('\n🌐 واجهات API الجديدة والمكتشفة');
+const { api } = await import('../core/api.js');
+check('api.spotifySearch معرّفة كدالة', typeof api.spotifySearch === 'function');
+check('api.tiktokSearch معرّفة كدالة', typeof api.tiktokSearch === 'function');
+check('api.pinimg معرّفة كدالة', typeof api.pinimg === 'function');
+check('api.mediafire معرّفة كدالة', typeof api.mediafire === 'function');
+check('api.executeCode معرّفة كدالة', typeof api.executeCode === 'function');
+
+console.log(`\n✅ ${pass} | ❌ ${fail}`);
+process.exit(fail ? 1 : 0);
+

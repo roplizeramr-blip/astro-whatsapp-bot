@@ -1,0 +1,19 @@
+{
+  "name": "nova-voip-server",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "سيرفر المكالمات الصوتية المستقل (Baileys VoIP WASM + Gemini Live)",
+  "scripts": {
+    "start": "node --env-file=../.env index.js",
+    "postinstall": "node scripts/patch-caller.js",
+    "repatch": "node scripts/patch-caller.js --force"
+  },
+  "dependencies": {
+    "@roamhq/wrtc": "^0.10.0",
+    "chama-bailez-pro": "3.3.2",
+    "pg": "^8.23.1",
+    "qrcode": "^1.5.4",
+    "ws": "^8.22.0"
+  }
+}

@@ -1,0 +1,43 @@
+# 🚫 ملفات ما خاصهاش تكون فالصورة ديال Docker
+# ⚠️ هاد الملف إجباري: Docker كينسخ كلشي بلا استفسار، والداتا ديالك
+#    (جلسات WhatsApp + .env) غادي داخلة فالـ image إلا ما حددتيش.
+
+# ── الأسرار والجلسات (الأهم) ──
+.env
+.env-*
+!.env.example
+session/
+session_voip/
+voip-server/session/
+data/
+backups/
+
+# ── الاعتماديات ──
+# كيتثبّتو داخل الصورة بـ npm install، ما خاصهاش يتنسخو من الماكينة.
+node_modules/
+voip-server/node_modules/
+
+# ── ملفات التطوير ──
+.git/
+.gitignore
+.gitattributes
+.vscode/
+.cursor/
+.opencode/
+_test/
+*.md
+!README.md
+!voip-server/README.md
+
+# ── ملفات مؤقتة ──
+*.log
+*.tmp
+*.mp3
+*.mp4
+*.wav
+_zcode/
+scratch/
+ecosystem.config.cjs
+railway.json
+.dockerignore
+Dockerfile
