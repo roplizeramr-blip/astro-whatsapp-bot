@@ -1,7 +1,7 @@
 {
-  "name": "nova-whatsapp-bot",
+  "name": "astro-whatsapp-bot",
   "version": "1.0.0",
-  "description": "بوت واتساب غير رسمي احترافي — ألعاب، ذكاء اصطناعي، إدارة مجموعات وحماية",
+  "description": "بوت واتساب ذكي (Baileys) + مكالمات صوتية حقيقية بـ Gemini Live عبر VoIP WASM",
   "type": "module",
   "main": "index.js",
   "scripts": {
